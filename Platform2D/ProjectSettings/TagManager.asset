@@ -12,7 +12,7 @@ TagManager:
   - Water
   - UI
   - Ground
-  - 
+  - Climp
   - 
   - 
   - 
@@ -43,6 +43,9 @@ TagManager:
     locked: 0
   - name: Background
     uniqueID: 1052717897
+    locked: 0
+  - name: Climp
+    uniqueID: 957261569
     locked: 0
   - name: Playr
     uniqueID: 4101914423

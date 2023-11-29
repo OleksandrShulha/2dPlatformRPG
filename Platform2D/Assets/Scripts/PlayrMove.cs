@@ -8,16 +8,20 @@ public class PlayrMove : MonoBehaviour
 {
     [SerializeField] float runSpeed = 10f;
     [SerializeField] float jumpSpeed = 10f;
+    [SerializeField] float climpSpeed = 3f;
     Vector2 moveInput;
     Rigidbody2D rb2d;
     Animator animator;
     CapsuleCollider2D capsuleCollider2;
+
+    float speedAnimation;
 
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         capsuleCollider2 = GetComponent<CapsuleCollider2D>();
+        speedAnimation = animator.speed;
     }
 
     // Update is called once per frame
@@ -25,23 +29,27 @@ public class PlayrMove : MonoBehaviour
     {
         Run();
         FlipSprite();
-
-        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")))
-        {
-            animator.SetBool("isJump", true);
-        }
-        else
-        {
-            animator.SetBool("isJump", false);
-        }
-
-
-
+        ClimpLeader();
+        AnimationHero();
     }
 
     void  OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
+    }
+
+    void ClimpLeader()
+    {
+        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")))
+        {
+            rb2d.gravityScale = 2f;
+            return;
+        }
+
+        Vector2 climpVelocity = new Vector2(rb2d.velocity.x, moveInput.y * climpSpeed);
+        rb2d.velocity = climpVelocity;
+        rb2d.gravityScale = 0f;
+
     }
 
     void OnJunp(InputValue value)
@@ -60,16 +68,6 @@ public class PlayrMove : MonoBehaviour
     {
         Vector2 playrVelocity = new Vector2(moveInput.x * runSpeed, rb2d.velocity.y);
         rb2d.velocity = playrVelocity;
-        bool playrAsHorizontalSpeed = Mathf.Abs(rb2d.velocity.x) > Mathf.Epsilon;
-        if (playrAsHorizontalSpeed)
-        {
-            animator.SetBool("isRunning", true);
-        }
-        else
-        {
-            animator.SetBool("isRunning", false);
-        }
-
     }
 
     void FlipSprite()
@@ -80,5 +78,52 @@ public class PlayrMove : MonoBehaviour
             transform.localScale = new Vector2(Mathf.Sign(rb2d.velocity.x), 1f);
         else
             transform.localScale = new Vector2(1f, 1f);
+    }
+
+
+    void AnimationHero()
+    {
+        //швидкість по вертикалі
+        bool playrAsVerticalSpeed = Mathf.Abs(rb2d.velocity.y) > Mathf.Epsilon;
+        //швидкість по горизонталі
+        bool playrAsHorizontalSpeed = Mathf.Abs(rb2d.velocity.x) > Mathf.Epsilon;
+
+        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+            capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && playrAsVerticalSpeed)
+        {
+            animator.SetBool("isClimp", true);
+            animator.speed = speedAnimation;
+        }
+        else if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+            capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && !playrAsVerticalSpeed)
+        {
+            animator.speed = 0f;
+        }
+        else
+        {
+            animator.SetBool("isClimp", false);
+            animator.speed= speedAnimation;
+        }
+
+        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+            !capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")))
+         {
+            animator.SetBool("isJump", true);
+         }
+        else
+        {
+            animator.SetBool("isJump", false);
+        }
+
+        if (capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+            playrAsHorizontalSpeed)
+        {
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
+        }
+
     }
 }
