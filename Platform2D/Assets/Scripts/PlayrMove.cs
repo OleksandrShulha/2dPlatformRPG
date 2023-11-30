@@ -15,6 +15,7 @@ public class PlayrMove : MonoBehaviour
     CapsuleCollider2D capsuleCollider2;
 
     float speedAnimation;
+    bool isAlive = true;
 
     void Start()
     {
@@ -27,14 +28,17 @@ public class PlayrMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!isAlive) { return; }
         Run();
         FlipSprite();
         ClimpLeader();
         AnimationHero();
+        Die();
     }
 
     void  OnMove(InputValue value)
     {
+        if (!isAlive) { return; }
         moveInput = value.Get<Vector2>();
     }
 
@@ -54,6 +58,7 @@ public class PlayrMove : MonoBehaviour
 
     void OnJunp(InputValue value)
     {
+        if (!isAlive) { return; }
         if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")))
         {
             return;           
@@ -87,43 +92,54 @@ public class PlayrMove : MonoBehaviour
         bool playrAsVerticalSpeed = Mathf.Abs(rb2d.velocity.y) > Mathf.Epsilon;
         //швидкість по горизонталі
         bool playrAsHorizontalSpeed = Mathf.Abs(rb2d.velocity.x) > Mathf.Epsilon;
+        if (isAlive)
+        {
+            if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+                capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && playrAsVerticalSpeed)
+            {
+                animator.SetBool("isClimp", true);
+                animator.speed = speedAnimation;
+            }
+            else if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+                capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && !playrAsVerticalSpeed)
+            {
+                animator.speed = 0f;
+            }
+            else
+            {
+                animator.SetBool("isClimp", false);
+                animator.speed = speedAnimation;
+            }
 
-        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
-            capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && playrAsVerticalSpeed)
-        {
-            animator.SetBool("isClimp", true);
-            animator.speed = speedAnimation;
-        }
-        else if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
-            capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")) && !playrAsVerticalSpeed)
-        {
-            animator.speed = 0f;
-        }
-        else
-        {
-            animator.SetBool("isClimp", false);
-            animator.speed= speedAnimation;
-        }
+            if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+                !capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")))
+            {
+                animator.SetBool("isJump", true);
+            }
+            else
+            {
+                animator.SetBool("isJump", false);
+            }
 
-        if (!capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
-            !capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Climp")))
-         {
-            animator.SetBool("isJump", true);
-         }
-        else
-        {
-            animator.SetBool("isJump", false);
+            if (capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
+                playrAsHorizontalSpeed)
+            {
+                animator.SetBool("isRunning", true);
+            }
+            else
+            {
+                animator.SetBool("isRunning", false);
+            }
         }
+    }
 
-        if (capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Ground")) &&
-            playrAsHorizontalSpeed)
+    void Die()
+    {
+        if (capsuleCollider2.IsTouchingLayers(LayerMask.GetMask("Enemies")))
         {
-            animator.SetBool("isRunning", true);
+            isAlive = false;
+            rb2d.velocity = new Vector2(5f, 5f);
+            animator.SetTrigger("Dead");
         }
-        else
-        {
-            animator.SetBool("isRunning", false);
-        }
-
     }
 }
