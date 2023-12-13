@@ -14,6 +14,9 @@ public class PlayrMove : MonoBehaviour
     Animator animator;
     CapsuleCollider2D capsuleCollider2;
 
+    [SerializeField] GameObject bullet;
+    [SerializeField] Transform gunPosition;
+
     float speedAnimation;
     bool isAlive = true;
 
@@ -34,12 +37,27 @@ public class PlayrMove : MonoBehaviour
         ClimpLeader();
         AnimationHero();
         Die();
+        Fire();
     }
 
     void  OnMove(InputValue value)
     {
         if (!isAlive) { return; }
         moveInput = value.Get<Vector2>();
+    }
+
+    void OnFire(InputValue value)
+    {
+        if (!isAlive) { return; }
+        Instantiate(bullet, gunPosition.position, transform.rotation);
+    }
+
+    void Fire()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Instantiate(bullet, gunPosition.position, transform.rotation);
+        }
     }
 
     void ClimpLeader()
